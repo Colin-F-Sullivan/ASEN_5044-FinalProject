@@ -38,7 +38,7 @@ ylabel('Position [m]','FontSize',14);
 hold on;
 grid on;
 plot(ti:dT:tf,state(:,3),'Linewidth',1.2);
-lgd = legend('X Position','Y-Position');
+lgd = legend('X-Position','Y-Position');
 lgd.FontSize = 14;
 xlim([0 P]);
 title('Non-Linear Orbital Position Vectors v. Time','FontSize',14);
@@ -57,7 +57,7 @@ xlim([0 P]);
 title('Non-Linear Orbital Velocity Vectors v. Time','FontSize',14);
 
 %% Do the same thing for each station
-for i = 1:5
+for i = 1:2
 y_i = Make_Y_i(i,t,state);
 %Plot it
 figure;
