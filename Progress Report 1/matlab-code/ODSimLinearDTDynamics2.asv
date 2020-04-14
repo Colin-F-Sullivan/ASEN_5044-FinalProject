@@ -26,7 +26,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [xk2,yk1,ObservingStations]...
-    =ODSimLinearDTDynamics2(xnomk0,xnomk1,xk0,unomk1,uk1,t1,DeltaT)%,wk1,vk1) <-Assume no measurement,process noise
+    =ODSimLinearDTDynamics2(xnomk0,xnomk1,xnomk2,xk0,unomk1,uk1,t1,DeltaT)%,wk1,vk1) <-Assume no measurement,process noise
 
     dxk=xk0-xnomk0;
     duk=uk1-unomk1;

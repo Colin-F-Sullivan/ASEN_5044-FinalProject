@@ -37,7 +37,6 @@ for i=2:length(t)-1
     [x(:,i),ytemp,ObservingStation]=ODSimLinearDTDynamics2(...
         NominalStateVector(:,i-1),...
         NominalStateVector(:,i),...
-        NominalStateVector(:,i+1),...
         x(:,i-1),...
         zeros(2,1),zeros(2,1),... %No control input perturbation, therefore unom=uk=0
         t(i),DeltaT);
@@ -92,7 +91,7 @@ lgd.FontSize = 14;
 xlim([0 max(t)-20]);
 title('Non-Linear Orbital Position Vector Errors v. Time','FontSize',14);
 subplot(1,2,2);
-plot(t,dx(3,:),'LineWidth',1.2);
+plot(t,dx(2,:),'LineWidth',1.2);
 hold on;
 xlabel('Time [s]','FontSize',14);
 ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
