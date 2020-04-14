@@ -69,7 +69,7 @@ save('state_nonlin_nom.mat','state');
 state0_offnom = [r0; .01; 0; r0.*sqrt(mu/r0^3)];
 [t_offnom,state_offnom] = ode45('dnonline_dt',ti:dT:tf,state0_offnom,opts);
 %Plot it
-figure;
+figure(24);
 subplot(1,2,1);
 plot(t_offnom,state_offnom(:,1)-state(:,1),'LineWidth',1.2);
 hold on;
