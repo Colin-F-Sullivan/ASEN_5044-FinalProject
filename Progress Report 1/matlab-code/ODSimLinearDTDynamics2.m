@@ -25,17 +25,17 @@
 %           yk1 - This time step actual observation vector
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [xk2,ObservingStations]...
-    =ODSimLinearDTDynamics(xnomk1,xnomk2,xk1,unomk1,uk1,t1,DeltaT)%,wk1,vk1) <-Assume no measurement,process noise
+function [xk2,yk1,ObservingStations]...
+    =ODSimLinearDTDynamics2(xnomk0,xnomk1,xnomk2,xk1,unomk1,uk1,t1,DeltaT)%,wk1,vk1) <-Assume no measurement,process noise
 
-    dxk=xk1-xnomk1;
+    dxk=xk1-xnomk0;
     duk=uk1-unomk1;
     
     [Ftilde,Gtilde,Omtilde,Htilde,Mtilde,ObservingStations]...
     = ODEulerDTJacobians(xnomk1, DeltaT,t1);
 
-    xk2=xnomk2+Ftilde*dxk+Gtilde*duk; %+Omtilde*wk1;  <-Assume no measurement,process noise
-    %yk1=ODStateToYk(ObservingStations,t1,xnomk0)...
-    %    +Htilde*dxk+Mtilde*duk; %+vk1;  <-Assume no measurement,process noise
+    xk2=xnomk1+Ftilde*dxk+Gtilde*duk; %+Omtilde*wk1;  <-Assume no measurement,process noise
+    yk1=ODStateToYk(ObservingStations,t1,xnomk0)...
+        +Htilde*dxk+Mtilde*duk; %+vk1;  <-Assume no measurement,process noise
     
 end

@@ -25,7 +25,7 @@ function [y_i_out] = Make_Y_i(i,t,state)
 %% Constants
 global mu
 R_E = 6378;
-omega_E = (2*pi)/mu;
+omega_E = (2*pi)/86400;
 
 %% Make Station Positions
 %Define Initial Conditions;

@@ -27,12 +27,13 @@ DeltaT=0;
 %% Linearized DT Dynamics and Measurement Model
 x=zeros(size(NominalStateVector));
 x(:,1)=NominalStateVector(:,1);
+x(3,1)=100;
 
 y=zeros(3*12,size(NominalStateVector,2));
 
 %Now calculate for the remaining time steps
 for i=2:length(t)-1
-    [x(:,i),ytemp,ObservingStation]=ODSimLinearDTDynamics(...
+    [x(:,i),ytemp,ObservingStation]=ODSimLinearDTDynamics2(...
         NominalStateVector(:,i-1),...
         NominalStateVector(:,i),...
         NominalStateVector(:,i+1),...
@@ -43,7 +44,7 @@ for i=2:length(t)-1
         k=1;
         for j=1:12
             if ismember(j,ObservingStation)
-                y(j*3-2:j*3,i-1)=ytemp(k*3-2:k*3);
+                y(j*3-2:j*3,i)=ytemp(k*3-2:k*3);
                 k=k+1;
             end
         end
