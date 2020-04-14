@@ -19,7 +19,7 @@ close all
 clc
 
 %% Constants
-DeltaT=0;
+DeltaT=10;
 perturbation=[0;0;100;0];
 
 %% Full Nonlinear Simulation of System Dynamics
@@ -78,29 +78,31 @@ plot(t,x(4,:),'LineWidth',1.2, "DisplayName", "Linearized DT Y-Velocity")
 %% ode45 Nominal vs LDT Offnominal Error
 %Compare Error
 dx=x-NominalStateVector;
-figure(2);
+figure(24);
 subplot(1,2,1);
-plot(t,dx(1,:),'LineWidth',1.2);
-xlabel('Time [s]','FontSize',14);
-ylabel('$\delta X$, $\delta Y$ [km]','FontSize',14,'interpreter','latex');
-hold on;
-grid on;
-plot(t,dx(3,:),'Linewidth',1.2);
-lgd = legend('$\delta X$','$\delta Y$','interpreter','latex');
-lgd.FontSize = 14;
-xlim([0 max(t)-20]);
-title('Non-Linear Orbital Position Vector Errors v. Time','FontSize',14);
+ plot(t,dx(1,:),'LineWidth',1.2,"DisplayName","$\delta X_{Linearized DT}$");
+% xlabel('Time [s]','FontSize',14);
+% ylabel('$\delta X$, $\delta Y$ [km]','FontSize',14,'interpreter','latex');
+% hold on;
+% grid on;
+plot(t,dx(3,:),'Linewidth',1.2,"DisplayName","$\delta Y_{Linearized DT}$");
+%lgd = legend('','','interpreter','latex');
+% lgd.FontSize = 14;
+ xlim([0 max(t)-20]);
+% title('Linearized DT Position Deltas','FontSize',14);
+legend('location','best','interpreter','latex')
 subplot(1,2,2);
-plot(t,dx(2,:),'LineWidth',1.2);
-hold on;
-xlabel('Time [s]','FontSize',14);
-ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
-grid on;
-plot(t,dx(4,:),'LineWidth',1.2);
-lgd = legend('$\delta \dot{X}$','$\delta \dot{Y}$','interpreter','latex');
-lgd.FontSize = 14;
-xlim([0 max(t)-20]);
-title('Non-Linear Orbital Velocity Vector Error v. Time','FontSize',14);
+plot(t,dx(2,:),'LineWidth',1.2,"DisplayName","$\delta \dot{X}_{Linearized DT}$");
+% hold on;
+% xlabel('Time [s]','FontSize',14);
+% ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
+% grid on;
+ plot(t,dx(4,:),'LineWidth',1.2,"DisplayName","$\delta \dot{Y}_{Linearized DT}$");
+ legend('location','best','interpreter','latex')
+%lgd = legend('','$\delta \dot{Y}_{Linearized DT}$','interpreter','latex');
+% lgd.FontSize = 14;
+ xlim([0 max(t)-20]);
+% title('Linearized DT Velocity Deltas v. Time','FontSize',14);
 
 %% ode45 Offnominal vs LDT Offnominal Error
 %Compare Error
@@ -113,21 +115,21 @@ ylabel('$\delta X$, $\delta Y$ [km]','FontSize',14,'interpreter','latex');
 hold on;
 grid on;
 plot(t,dx(3,:),'Linewidth',1.2);
-lgd = legend('$\delta X$','$\delta Y$','interpreter','latex');
+lgd = legend('$\hat{X}=X_{Linearized DT}-X_{ode45}$','$\hat{Y}=Y_{Linearized DT}-Y_{ode45}$','interpreter','latex');
 lgd.FontSize = 14;
 xlim([0 max(t)-20]);
-title('Non-Linear Orbital Position Vector Errors v. Time','FontSize',14);
+title('Difference Between Linearized DT and ode45 Position Solution v. Time','FontSize',14);
 subplot(1,2,2);
-plot(t,dx(3,:),'LineWidth',1.2);
+plot(t,dx(2,:),'LineWidth',1.2);
 hold on;
 xlabel('Time [s]','FontSize',14);
 ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
 grid on;
 plot(t,dx(4,:),'LineWidth',1.2);
-lgd = legend('$\delta \dot{X}$','$\delta \dot{Y}$','interpreter','latex');
+lgd = legend('$\hat{\dot{X}}=\dot{X}_{Linearized DT}-\dot{X}_{ode45}$','$\hat{\dot{Y}}=\dot{Y}_{Linearized DT}-\dot{Y}_{ode45}$','interpreter','latex');
 lgd.FontSize = 14;
 xlim([0 max(t)-20]);
-title('Non-Linear Orbital Velocity Vector Error v. Time','FontSize',14);
+title('Difference Between Linearized DT and ode45 Velocity Solution v. Time','FontSize',14);
 
 %% Stations
 %Measurement Stations
