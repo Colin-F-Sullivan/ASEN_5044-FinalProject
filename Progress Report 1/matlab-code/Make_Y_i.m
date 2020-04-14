@@ -2,8 +2,12 @@
 % Title: Make_Y_i
 % Author: Colin Sullivan
 % 
+% v2: Modified by Ben Wise
+% Changelog: Used ODSatInView Routine to fix some issues with code used to
+% test if sat was in view. Output graphs now consistent with expected.
+%
 % Date Created: 4/12/20
-% Date Last Modified: 4/12/20
+% Date Last Modified: 4/13/20
 %
 % Purpose: Create the vector of y_i measurements for some given station 'i'
 %          over some time vector 't' with corresponding state information
@@ -31,7 +35,7 @@ X_i = R_E.*cos(omega_E.*t + THETA_0);
 Xdot_i = (-omega_E*R_E).*sin(omega_E.*t + THETA_0);
 Y_i = R_E.*sin(omega_E.*t + THETA_0);
 Ydot_i = (omega_E*R_E).*cos(omega_E.*t + THETA_0);
-theta_i = atan(X_i./Y_i);
+theta_i = atan2(Y_i,X_i);
 
 %% Make y_i
 X = state(:,1);
@@ -42,17 +46,16 @@ Ydot = state(:,4);
 %Equations from doc:
 rho_i = sqrt((X - X_i).^2 + (Y - Y_i).^2);
 rho_dot_i = (((X - X_i).*(Xdot-Xdot_i)) + ((Y - Y_i).*(Ydot-Ydot_i)))./rho_i;
-phi_i = atan((Y-Y_i)./(X-X_i));
+phi_i = atan2((Y-Y_i),(X-X_i));
 
 %Stack them
 y_i_temp = [rho_i';rho_dot_i';phi_i'];
 
 %Check angular requirements and set all those that dont meet to zero
 y_i_out = zeros(size(y_i_temp)); %Preallocate
-tester = [(-(pi/2)+theta_i)';((pi/2) + theta_i)']; %Testing Conditions from document
 for i = 1:length(y_i_temp)
     %If its within the bound, assign normally
-    if ((tester(1,i) <= y_i_temp(3,i)) && (y_i_temp(3,i) <= tester(2,i)))
+    if ODSatInView(phi_i(i),theta_i(i))
         y_i_out(:,i) = y_i_temp(:,i);
     else
         y_i_out(:,i) = zeros(3,1);
