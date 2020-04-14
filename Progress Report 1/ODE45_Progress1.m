@@ -59,7 +59,7 @@ title('Non-Linear Orbital Velocity Vectors v. Time','FontSize',14);
 save('state_nonlin_nom.mat','state');
 
 %Do off-nominal condition
-state0_offnom = [r0; .01; 0; r0.*sqrt(mu/r0^3)];
+state0_offnom = [r0; 0; 100; r0.*sqrt(mu/r0^3)];
 [t_offnom,state_offnom] = ode45('dnonline_dt',ti:dT:tf,state0_offnom,opts);
 %Plot it
 figure;
