@@ -23,7 +23,7 @@ DeltaT=10;
 perturbation=[0;0;100;0];
 
 %% Full Nonlinear Simulation of System Dynamics
-[NominalStateVector,OffNominalStateVector,t]=ODE45_Progress1(false, perturbation);
+[NominalStateVector,OffNominalStateVector,~,t]=ODE45_Progress1(false, perturbation);
 
 %% Linearized DT Dynamics and Measurement Model
 x=zeros(size(NominalStateVector));
@@ -54,7 +54,7 @@ end
 %% Compare and Validate Jacobians and DT model against ode45 Sim
 
 %Augment Graphs from ODE45_Progress1
-[~,~,~]=ODE45_Progress1(true,perturbation);
+[~,~,y_nom,~]=ODE45_Progress1(true,perturbation);
 
 %% ode45 Nominal vs LDT Offnominal
 figure(1)
@@ -149,3 +149,16 @@ for i = [1,7,12]
     %xlim([0 max(t)]);
 end
 
+
+figure(25);
+%Range
+subplot(1,3,1);
+    plot(t,y(21-2,:)-y_nom(1,:),'LineWidth',1.2);
+    lgd = legend('$\delta \rho^i_{ode45}$','$\delta \rho^i_{Linearized DT}$','interpreter','latex');
+subplot(1,3,2);
+    plot(t,y(21-1,:)-y_nom(2,:),'LineWidth',1.2);
+    lgd = legend('$\delta \dot{\rho}^i_{ode45}$','$\delta \dpt{\rho}^i_{Linearized DT}$','interpreter','latex');
+
+subplot(1,3,3);
+    plot(t,y(21,:)-y_nom(3,:),'LineWidth',1.2);
+    lgd = legend('$\delta \phi^i_{ode45}$','$\delta \phi^i_{Linearized DT}$','interpreter','latex');

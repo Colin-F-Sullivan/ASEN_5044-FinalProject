@@ -18,7 +18,7 @@
 %               Progress report 1 of ASEN 5044 Final Project
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [state,state_offnom,t]=ODE45_Progress1(plotOn, perturbation)
+function [state,state_offnom,y,t]=ODE45_Progress1(plotOn, perturbation)
 %Constants
 global mu r0
 mu = 398600; %[km^3/s^2]
@@ -38,6 +38,8 @@ state0 = [r0; 0; 0; r0.*sqrt(mu/r0^3)];
 %Do off-nominal condition
 state0_offnom = state0+perturbation;
 [t_offnom,state_offnom] = ode45('dnonline_dt',ti:dT:tf,state0_offnom,opts);
+
+y=[];
 
 if plotOn
     
@@ -171,16 +173,17 @@ if plotOn
         y = [y; y_i];
     end
     
-    y_i=[]
-    for i = [1,7,12]
+    y=[];
+    for i = [7,12]
         y_i = Make_Y_i(i,t,state);
+        y = [y; y_i];
     end
     
     %Save y nominal condition
     save('y_nonlin_nom.mat','y');
     %Make Off nom
     y_offnom = [];
-    for i = 1:12
+    for i = 7
         y_i_offnom = Make_Y_i(i,t_offnom,state_offnom);
         y_offnom = [y_offnom; y_i_offnom];
     end
@@ -194,7 +197,7 @@ if plotOn
     hold on;
     grid on;
     xlabel('Time [s]','FontSize',14);
-    ylabel('\delta Relative Range [m]','FontSize',14);
+    ylabel('\delta Relative Range [km]','FontSize',14);
     tit = ['\delta Relative Range v. Time for Station ' num2str(i)];
     title(tit,'FontSize',14);
     xlim([0 max(t)]);
