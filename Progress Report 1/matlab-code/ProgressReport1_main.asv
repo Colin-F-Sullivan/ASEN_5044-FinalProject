@@ -56,8 +56,6 @@ end
 
 %Augment Graphs from ODE45_Progress1
 [~,~,~]=ODE45_Progress1(true,perturbation);
-
-%% ode45 Nominal vs LDT Offnominal
 figure(1)
 subplot(1,2,1);
 plot(t,x(1,:),'LineWidth',1.2, "DisplayName", "Linearized DT X-Position")
@@ -66,9 +64,7 @@ subplot(1,2,2);
 plot(t,x(2,:),'LineWidth',1.2, "DisplayName", "Linearized DT X-Velocity")
 plot(t,x(4,:),'LineWidth',1.2, "DisplayName", "Linearized DT Y-Velocity")
 
-%% ode45 Offnominal vs LDT Offnominal
 figure(18)
-hold on
 subplot(1,2,1);
 plot(t,x(1,:),'LineWidth',1.2, "DisplayName", "Linearized DT X-Position")
 plot(t,x(3,:),'LineWidth',1.2, "DisplayName", "Linearized DT Y-Position")
@@ -76,7 +72,33 @@ subplot(1,2,2);
 plot(t,x(2,:),'LineWidth',1.2, "DisplayName", "Linearized DT X-Velocity")
 plot(t,x(4,:),'LineWidth',1.2, "DisplayName", "Linearized DT Y-Velocity")
 
-%% ode45 Nominal vs LDT Offnominal Error
+
+% %Compare Error
+% dx=x-NominalStateVector;
+% figure(2);
+% subplot(1,2,1);
+% plot(t,dx(1,:),'LineWidth',1.2);
+% xlabel('Time [s]','FontSize',14);
+% ylabel('$\delta X$, $\delta Y$ [km]','FontSize',14,'interpreter','latex');
+% hold on;
+% grid on;
+% plot(t,dx(3,:),'Linewidth',1.2);
+% lgd = legend('$\delta X$','$\delta Y$','interpreter','latex');
+% lgd.FontSize = 14;
+% xlim([0 max(t)-20]);
+% title('Non-Linear Orbital Position Vector Errors v. Time','FontSize',14);
+% subplot(1,2,2);
+% plot(t,dx(3,:),'LineWidth',1.2);
+% hold on;
+% xlabel('Time [s]','FontSize',14);
+% ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
+% grid on;
+% plot(t,dx(4,:),'LineWidth',1.2);
+% lgd = legend('$\delta \dot{X}$','$\delta \dot{Y}$','interpreter','latex');
+% lgd.FontSize = 14;
+% xlim([0 max(t)-20]);
+% title('Non-Linear Orbital Velocity Vector Error v. Time','FontSize',14);
+
 %Compare Error
 dx=x-NominalStateVector;
 figure(2);
@@ -103,34 +125,7 @@ lgd.FontSize = 14;
 xlim([0 max(t)-20]);
 title('Non-Linear Orbital Velocity Vector Error v. Time','FontSize',14);
 
-%% ode45 Offnominal vs LDT Offnominal Error
-%Compare Error
-dx=x-OffNominalStateVector;
-figure(19);
-subplot(1,2,1);
-plot(t,dx(1,:),'LineWidth',1.2);
-xlabel('Time [s]','FontSize',14);
-ylabel('$\delta X$, $\delta Y$ [km]','FontSize',14,'interpreter','latex');
-hold on;
-grid on;
-plot(t,dx(3,:),'Linewidth',1.2);
-lgd = legend('$\delta X$','$\delta Y$','interpreter','latex');
-lgd.FontSize = 14;
-xlim([0 max(t)-20]);
-title('Non-Linear Orbital Position Vector Errors v. Time','FontSize',14);
-subplot(1,2,2);
-plot(t,dx(3,:),'LineWidth',1.2);
-hold on;
-xlabel('Time [s]','FontSize',14);
-ylabel('$\delta \dot{X}$, $\delta \dot{Y}$ [km/s]','FontSize',14,'interpreter','latex');
-grid on;
-plot(t,dx(4,:),'LineWidth',1.2);
-lgd = legend('$\delta \dot{X}$','$\delta \dot{Y}$','interpreter','latex');
-lgd.FontSize = 14;
-xlim([0 max(t)-20]);
-title('Non-Linear Orbital Velocity Vector Error v. Time','FontSize',14);
 
-%% Stations
 %Measurement Stations
 for i = [1,7,12]
     figure(i+2);
