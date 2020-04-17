@@ -13,9 +13,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 clc;
-clear all;
 close all;
 
 %% Set Up and Create Noisy Data
@@ -24,10 +22,7 @@ mu = 398600; %[km^3/s^2]
 r0 = 6678;
 
 %Time Vectors
-P = 2*pi*sqrt(r0^3/mu);
-ti = 0;
 dT = 10;
-tf = P+5*dT; %Plot over one period of circular orbit + 2 time step
 
 
 input = load('orbitdeterm_finalproj_KFdata.mat');
@@ -35,6 +30,7 @@ Qtrue = input.Qtrue;
 Rtrue = input.Rtrue;
 
 [state,state_offnom,y,t] = ODE45_Progress1(1,[0; 0; 0; 0]);
+
 %Add Noise
 for i = 1:length(y)
     %Find which stations are active
@@ -47,9 +43,9 @@ for i = 1:length(y)
 end
 
 %% KF
-P_0 = eye(4);
-mu_0 = [0 0 0 0]';
-Q = eye(4);
+P_0 = 10*randn(4,4);
+mu_0 = state(:,1);
+Q = zeros(4);
 Q(2,2) = Qtrue(1,1);
 Q(4,4) = Qtrue(2,2);
 
@@ -65,30 +61,41 @@ sigma_plus(:,1) = 2.*sqrt(diag(abs(P_plus(:,:,1))));
 %Kalman Filter Loop
 for k = 2:length(t)
     
-    %Make F_{k-1}
-    [F,G,Omtilde,H,M,ObservingStations]...
-    = ODEulerDTJacobians(state,dT,t(k));
+    %Make F
+    [~,~,~,H_k,~,ObservingStations]...
+    = ODEulerDTJacobians(state(:,k),dT,t(k));
     
     %Make y_k, R_k, H_k
     y_k = [];
     R_k = [];
-    for i = length(ObservingStations)
-        %y_k
-        y_k_temp = y(ObservingStations(i)*3-2:ObservingStations(i)*3,k);
+    %Find the stations being used 
+    for s = 1:length(ObservingStations)
+        y_k_temp = y(ObservingStations(s)*3-2:ObservingStations(s)*3,k);
         y_k = [y_k; y_k_temp];
-        %R_k
-        R = blkdiag(R_k,Rtrue);
+        R_k = blkdiag(R_k,Rtrue);
     end
+    
+    %Make F_k_mi1, G_k_minus_1
+    [F_k_minus_1,G_k_minus_1,~,~,~,ObservingStations]...
+    = ODEulerDTJacobians(state(:,k),dT,t(k-1));
    
-    
     %Iterate Loop
-    P_k_minus = F*P_plus(:,:,k-1)*F' + Q;
-    K_k = P_k_minus*H'*((H*P_k_minus*H' + R)^-1);
+    P_k_minus = F_k_minus_1*P_plus(:,:,k-1)*F_k_minus_1' + Q;
+    K_k = P_k_minus*H_k'*((H_k*P_k_minus*H_k' + R_k)^-1);
     
-    mu_minus = F*mu_plus(:,k-1);% + G*u(:,k-1);
-    mu_plus(:,k) = mu_minus + K_k*(y_k - H*mu_minus);
+    mu_minus = F_k_minus_1*mu_plus(:,k-1);% + G*u(:,k-1);
+    mu_plus(:,k) = mu_minus + K_k*(y_k - H_k*mu_minus);
     
-    P_plus(:,:,k) = (eye(size(K_k*H)) - K_k*H)*P_k_minus;
+    P_plus(:,:,k) = (eye(size(K_k*H_k)) - K_k*H_k)*P_k_minus;
     sigma_plus(:,k) = 2.*sqrt(diag(abs(P_plus(:,:,k))));
     
 end
+
+figure;
+plot(t,state(1,:),'LineWidth',1.2);
+hold on;
+plot(t,mu_plus(1,:),'LineWidth',1.2);
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel('X-Position [m]','FontSize',12);
+lgd = legend('x_1','KF');

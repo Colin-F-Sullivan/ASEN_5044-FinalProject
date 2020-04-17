@@ -43,7 +43,6 @@ function [Ctilde,ObservingStations] = OD_CtildeMatr(t,StateVector)
        %But only if tracking angles are valid 
        if ODSatInView(phi_i(i),thetai(i))
            ObservingStations=[ObservingStations, i];
-           
            denom=sqrt((x1-Xi(i))^2+(x3-Yi(i))^2);
            
            Ctemp=[(x1-Xi(i))/denom , 0, (x3-Yi(i))/denom, 0; ...
