@@ -23,7 +23,7 @@ perturbation=[0;0.075;0;-0.021];
 numTimeSteps=1401;
 
 %% Full Nonlinear Simulation of System Dynamics
-[NominalStateVector,OffNominalStateVector,t]=ODE45_EKF(perturbation);
+[~,OffNominalStateVector,t]=ODE45_EKF(perturbation);
 
 clear perturbation
 
@@ -35,7 +35,7 @@ clear perturbation
 %     0,0,.001,0;...
 %     0,.5,0,1]/100;
 Q=[10,.5;.5,10]/2000;
-R=[1,.015,.035;.015,2,.025;.035,.025,0.5]/1000%2000;
+R=[1,.015,.035;.015,2,.025;.035,.025,0.5]/1000;%2000;
 
 Sw=chol(Q,'lower');
 Sv=chol(R,'lower');
@@ -47,7 +47,7 @@ vk=Sv*randn(3,numTimeSteps);
 
 clear Sw Sv
 
-NomStateVectwithErr=NominalStateVector+wk;
+NomStateVectwithErr=OffNominalStateVector+wk;
 
 yk=zeros(6,numTimeSteps);
 sID=zeros(2,numTimeSteps);
@@ -65,7 +65,7 @@ R=R/5;
 ytrue_k=zeros(size(yk));
 
 for k=0:numTimeSteps-1
-    [ytrue_k(:,k+1),~]=ODGenerateYk([],t(k+1),NominalStateVector(:,k+1),[0;0;0]);
+    [ytrue_k(:,k+1),~]=ODGenerateYk([],t(k+1),OffNominalStateVector(:,k+1),[0;0;0]);
 end
 
 
@@ -98,23 +98,12 @@ for i=1:numTimeSteps-1
         ytrue_k(:,i+1));
 end
 
-%% NEES and NIS
-%disp('Max State Error:')
-%max((NominalStateVector-xEKF)')'
-
-figure()
-for j=1:4
-subplot(2,1,mod(j+1,2)+1)
-plot(NominalStateVector(j,:))
-hold on
-plot(xEKF(j,:))
-end
 
 %% Plot Results
 figure()
 for j=1:4
 subplot(2,1,mod(j+1,2)+1)
-plot(NominalStateVector(j,:))
+plot(OffNominalStateVector(j,:))
 hold on
 plot(xEKF(j,:))
 end
@@ -122,7 +111,7 @@ end
 figure()
 for j=1:4
 subplot(4,1,mod(j+1,2)+1)
-plot(NominalStateVector(j,:)-xEKF(j,:))
+plot(OffNominalStateVector(j,:)-xEKF(j,:))
 hold on
 end
 subplot(4,1,3)

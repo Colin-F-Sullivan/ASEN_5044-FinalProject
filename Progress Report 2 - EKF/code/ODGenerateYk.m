@@ -27,15 +27,15 @@ function [yk,sID] = ODGenerateYk(stations,t,StateVector,vk)
     x4 = StateVector(4);
 
     %Get all station locations at time t
-    [Xi,Yi,Xidot,Yidot,~]=ODTrackingStations(t);
+    [Xi,Yi,Xidot,Yidot,thetai]=ODTrackingStations(t);
 
     %Get Angles between Sat Position and Tracking Location, Check Tracking
     %Criteria
     phi_i=zeros(size(Xi));
-    theta_i=zeros(size(Xi));
+    %theta_i=zeros(size(Xi));
     for i=1:12
         phi_i(i)=atan2((x3-Yi(i)),(x1-Xi(i)));
-        theta_i(i)=atan2(Yi(i),Xi(i));
+        %theta_i(i)=atan2(Yi(i),Xi(i));
     end
     
     yk=[];
@@ -58,7 +58,7 @@ function [yk,sID] = ODGenerateYk(stations,t,StateVector,vk)
             rho_dot_i = (((x1 - Xi(iter)).*(x2-Xidot(iter))) + ((x3 - Yi(iter)).*(x4-Yidot(iter))))./rho_i;
             
             
-            if ODSatInView(phi_i(iter),theta_i(iter))
+            if ODSatInView(phi_i(iter),thetai(iter))
                 yk = [yk;[rho_i;rho_dot_i;phi_i(iter)]+vk];
                 sID=[sID;iter];
             end
@@ -68,10 +68,14 @@ function [yk,sID] = ODGenerateYk(stations,t,StateVector,vk)
         
         if(size(yk,1)==3)
             yk=[yk;[0;0;0]];
+        elseif size(yk,1)==0
+            yk=[0;0;0;0;0;0];
         end
         
         if max(size(sID))==1
             sID=[sID,0];
+        elseif max(size(sID))==0
+            sID=[0;0];
         end
         
     end

@@ -61,7 +61,9 @@ Pminus_kplus1= Ftilde_k*Pplus_k*Ftilde_k'+Omega_k*Q_k*Omega_k';
 %Find yminus_kplus1 using x_kplus1, v_kplus1=0 using full NL Eqns
 yminus_kplus1=ODStateToYk(ObservingStations_kplus1,t_k+DeltaT,xminus_kplus1);
 
-if y_kplus1(4:6)== [0;0;0]
+if y_kplus1(1:6)== [0;0;0;0;0;0]
+    y_kplus1=[];
+elseif y_kplus1(4:6)== [0;0;0]
     y_kplus1=y_kplus1(1:3);
     yminus_kplus1=yminus_kplus1(1:3);
     Htilde_kplus1=Htilde_kplus1(1:3,:);
@@ -81,18 +83,32 @@ if max(size(y_kplus1))>4
     R_kplus1=mdiag(R_kplus1,R_kplus1);
 end
 
-S_kplus1=Htilde_kplus1 * Pminus_kplus1 * Htilde_kplus1' + R_kplus1;
+if ~max(size(Htilde_kplus1))==0
+    S_kplus1=Htilde_kplus1 * Pminus_kplus1 * Htilde_kplus1' + R_kplus1;
 
-K_kplus1=Pminus_kplus1 * Htilde_kplus1' * ...
-    ( S_kplus1)^-1;
+    K_kplus1=Pminus_kplus1 * Htilde_kplus1' * ...
+        ( S_kplus1)^-1;
+end
+
  
 %% MS.4: Update Total State and Approximate Covariance via linearization
 %Update Total State Estimate
-xplus_kplus1 = xminus_kplus1 +K_kplus1*ey_kplus1;
+if exist('K_Kplus1','var')
+    xplus_kplus1 = xminus_kplus1 + K_kplus1*ey_kplus1;
+else
+    xplus_kplus1 = xminus_kplus1;
+end
 
 %Update Covariance
-KH_kplus1 = K_kplus1 * Htilde_kplus1;
-Pplus_kplus1 = (eye(size(KH_kplus1)) - KH_kplus1)*Pminus_kplus1;
+if exist('K_kplus1','var')
+    KH_kplus1 = K_kplus1 * Htilde_kplus1;
+    Pplus_kplus1 = (eye(size(KH_kplus1)) - KH_kplus1)*Pminus_kplus1;
+else
+    Pplus_kplus1 = Pminus_kplus1;
+    NEES_kplus1=NaN;
+    NIS_kplus1=NaN;
+    return;
+end
 
 %% NEES
 if exist('xtruth_kplus1','var')
