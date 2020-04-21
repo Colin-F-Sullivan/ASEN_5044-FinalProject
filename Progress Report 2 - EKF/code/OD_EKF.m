@@ -93,7 +93,7 @@ end
  
 %% MS.4: Update Total State and Approximate Covariance via linearization
 %Update Total State Estimate
-if exist('K_Kplus1','var')
+if exist('K_kplus1','var')
     xplus_kplus1 = xminus_kplus1 + K_kplus1*ey_kplus1;
 else
     xplus_kplus1 = xminus_kplus1;
@@ -111,7 +111,7 @@ else
 end
 
 %% NEES
-if xtruth_kplus1~=[]
+if ~isempty(xtruth_kplus1)
     stateVectErr=xtruth_kplus1-xplus_kplus1;
     NEES_kplus1=stateVectErr'*(Pplus_kplus1)^-1*stateVectErr;
 else

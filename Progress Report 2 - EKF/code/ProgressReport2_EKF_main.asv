@@ -22,20 +22,20 @@ DeltaT=10;
 perturbation=[0;0.075;0;-0.021];
 numTimeSteps=1401;
 
-%% Load Data
-load('orbitdeterm_finalproj_KFdata.mat')
-Q=Qtrue;
-R=Rtrue;
-clear Qtrue Rtrue temp ydata measLabels i tvec
-
-
 %% Full Nonlinear Simulation of System Dynamics
 [~,OffNominalStateVector,t]=ODE45_EKF(perturbation);
 
 clear perturbation
 
 %% Simulate Measurement Data for Testing
-%rng(100)
+rng(101)
+% 
+% Q=[.001,0,0,0;...
+%     0,0.1,0,.5;...
+%     0,0,.001,0;...
+%     0,.5,0,1]/100;
+Q=[10,.5;.5,10]*1000;
+R=[1,.015,.035;.015,2,.025;.035,.025,0.5];%2000;
 
 Sw=chol(Q,'lower');
 Sv=chol(R,'lower');
@@ -57,8 +57,9 @@ for k=0:numTimeSteps-1
 end
 
 clear k
-%Q=diag(diag(Q))*2;
-%R=diag(diag(R));
+
+Q=Q/50;
+%R=R*50;
 
 %% Generate True yk
 ytrue_k=zeros(size(yk));
@@ -102,22 +103,19 @@ end
 figure()
 for j=1:4
 subplot(2,1,mod(j+1,2)+1)
-plot(t,OffNominalStateVector(j,:))
+plot(OffNominalStateVector(j,:))
 hold on
-plot(t,xEKF(j,:))
-xlim([0 5431])
+plot(xEKF(j,:))
+xlim([])
 end
 
 figure()
 for j=1:4
 subplot(4,1,mod(j+1,2)+1)
-plot(t,OffNominalStateVector(j,:)-xEKF(j,:))
-xlim([0 5431])
+plot(OffNominalStateVector(j,:)-xEKF(j,:))
 hold on
 end
 subplot(4,1,3)
-plot(t,NEES)
-xlim([0 5431])
+plot(NEES)
 subplot(4,1,4)
-plot(t,NIS)
-xlim([0 5431])
+plot(NIS)
