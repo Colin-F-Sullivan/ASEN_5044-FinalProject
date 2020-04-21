@@ -57,8 +57,8 @@ for k=0:numTimeSteps-1
 end
 
 clear k
-%Q=diag(diag(Q))*2;
-%R=diag(diag(R));
+Q=diag(diag(Q))*10;
+R=diag(diag(R))*10;
 
 %% Generate True yk
 ytrue_k=zeros(size(yk));
@@ -75,7 +75,7 @@ PEKF=[xEKF,xEKF,xEKF,xEKF];
 
 %Initialize with initial guess
 xEKF(:,1)=OffNominalStateVector(:,1);
-PEKF(1:4,1:4)=diag([300,1,300,1]);
+PEKF(1:4,1:4)=diag([30,.5,30,.5].^2)+0.001*(ones(4)-eye(4));
 NEES=zeros(1,numTimeSteps);
 NIS=NEES;
 
@@ -97,27 +97,95 @@ for i=1:numTimeSteps-1
         ytrue_k(:,i+1));
 end
 
+%Convert P matrix to nice form
+TwoSigmaSq=zeros(4,numTimeSteps);
+
+for i=1:10%numTimeSteps
+    TwoSigmaSq(:,i)=2*sqrt(abs(diag(PEKF(:,i*4-3:i*4))));    
+end
 
 %% Plot Results
-figure()
+
+ylabels={'X-Position [km]';'X-Velocity [km/s]';'Y-Position [km]';'Y-Velocity [km/s]'};
+graphName={"x_1";"x_2";"x_3";"x_4"};
+legendTypes={'_{,ode45}';'_{,EKF}';'_{,EKF} + 2\sigma';'_{,EKF} - 2\sigma'};
+
+%Graphs of Nominal State vs EKF w/2 sigma
 for j=1:4
-subplot(2,1,mod(j+1,2)+1)
-plot(t,OffNominalStateVector(j,:))
-hold on
-plot(t,xEKF(j,:))
-xlim([0 5431])
+figure(j);
+plot(t,OffNominalStateVector(j,:),'LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{1}));
+hold on;
+plot(t,xEKF(j,:),'LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{2}));
+plot(t,xEKF(j,:)+TwoSigmaSq(j,:),'r--','LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{3}));
+plot(t,xEKF(j,:)-TwoSigmaSq(j,:),'r--','LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{4}));
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel(ylabels{j},'FontSize',12);
+legend('location','Best') 
+xlim([0 5431]);
+title(strcat("Estimation of ",graphName{j},' v. Time'),'FontSize',14);
 end
 
-figure()
+%Graphs of Nominal State -EKF w/2 sigma
+ylabels={'X-Position Error [km]';'X-Velocity Error[km/s]';'Y-Position Error[km]';'Y-Velocity Error[km/s]'};
+legendTypes={'_{EKF Error}';'_{EKF Error} + 2\sigma';'_{EKF Error} - 2\sigma'};
+
 for j=1:4
-subplot(4,1,mod(j+1,2)+1)
-plot(t,OffNominalStateVector(j,:)-xEKF(j,:))
-xlim([0 5431])
-hold on
+figure(j+4);
+% plot(t,OffNominalStateVector(j,:)-,'LineWidth',1.2,...
+%     'DisplayName',strcat(graphName{j},legendTypes{1}));
+plot(t,OffNominalStateVector(j,:)-xEKF(j,:),'LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{1}));
+hold on;
+plot(t,OffNominalStateVector(j,:)-xEKF(j,:)+TwoSigmaSq(j,:),'r--','LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{2}));
+plot(t,OffNominalStateVector(j,:)-xEKF(j,:)-TwoSigmaSq(j,:),'r--','LineWidth',1.2,...
+    'DisplayName',strcat(graphName{j},legendTypes{3}));
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel(ylabels{j},'FontSize',12);
+legend('location','Best') 
+xlim([0 5431]);
+title(strcat("Error in EKF Estimate of ",graphName{j},'(w.r.t. ode45 Solution) v. Time'),'FontSize',14);
 end
-subplot(4,1,3)
-plot(t,NEES)
-xlim([0 5431])
-subplot(4,1,4)
-plot(t,NIS)
-xlim([0 5431])
+
+%%
+
+%NEES Test
+E_NEESbar=NEES;
+NumSims=1
+alphaNEES = 0.1;
+Nnx = NumSims*4;
+%Intervals
+r1x = chi2inv(alphaNEES/2, Nnx )./ NumSims;
+r2x = chi2inv(1-alphaNEES/2, Nnx )./ NumSims;
+figure;
+plot(E_NEESbar,'ro','MarkerSize',1,'LineWidth',2);
+hold on;
+plot(r1x*ones(size(E_NEESbar)),'r--','LineWidth',2)
+plot(r2x*ones(size(E_NEESbar)),'r--','LineWidth',2)
+ylabel('NEES','FontSize',14);
+grid on;
+xlabel('Time Step, k','FontSize',14);
+title('NEES Estimation Results','FontSize',14);
+lgd = legend('NEES', 'r_1 Bound', 'r_2 Bound');
+
+%NIS Test
+E_NIS=NIS;
+alphaNIS = 0.1;
+r1y = chi2inv(alphaNIS/2,3*NumSims)./ NumSims;
+r2y = chi2inv(1-alphaNIS/2,3*NumSims)./ NumSims;
+figure;
+plot(E_NIS,'bo','MarkerSize',1,'LineWidth',2);
+hold on;
+grid on;
+plot(r1y*ones(size(E_NIS)),'b--','LineWidth',2);
+plot(r2y*ones(size(E_NIS)),'b--','LineWidth',2);
+ylabel('NIS statistic','FontSize',14);
+xlabel('Time step, k','FontSize',14);
+title('NIS Estimation Results','FontSize',14);
+legend('NIS', 'r_1 bound', 'r_2 bound');
