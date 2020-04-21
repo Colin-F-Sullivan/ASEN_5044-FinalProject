@@ -24,12 +24,14 @@ r0 = 6678;
 %Time Vectors
 dT = 10;
 
-
 input = load('orbitdeterm_finalproj_KFdata.mat');
-Qtrue = input.Qtrue;
+Q = input.Qtrue;
 Rtrue = input.Rtrue;
+pert = [0; 0; 1; 0];
 
-[state,state_offnom,y,t] = ODE45_Progress1(1,[0; 0; 0; 0]);
+[state,state_offnom,ynom,y_offnom,t] = ODE45_Progress1(1,pert);
+
+y = y_offnom-ynom;
 
 %Add Noise
 for i = 1:length(y)
@@ -43,12 +45,8 @@ for i = 1:length(y)
 end
 
 %% KF
-P_0 = 10*randn(4,4);
-mu_0 = state(:,1);
-Q = zeros(4);
-Q(2,2) = Qtrue(1,1);
-Q(4,4) = Qtrue(2,2);
-
+P_0 = .01*eye(4);
+mu_0 = (state_offnom(:,1)-state(:,1));
 
 %Preallocation
 P_plus = zeros(length(P_0),length(P_0),length(t));
@@ -76,11 +74,12 @@ for k = 2:length(t)
     end
     
     %Make F_k_mi1, G_k_minus_1
-    [F_k_minus_1,G_k_minus_1,~,~,~,ObservingStations]...
+    [F_k_minus_1,G_k_minus_1,Om_k_minus_1,~,~,ObservingStations]...
     = ODEulerDTJacobians(state(:,k),dT,t(k-1));
-   
+    
     %Iterate Loop
-    P_k_minus = F_k_minus_1*P_plus(:,:,k-1)*F_k_minus_1' + Q;
+    P_k_minus = F_k_minus_1*P_plus(:,:,k-1)*F_k_minus_1' + ...
+        Om_k_minus_1*Q*Om_k_minus_1';
     K_k = P_k_minus*H_k'*((H_k*P_k_minus*H_k' + R_k)^-1);
     
     mu_minus = F_k_minus_1*mu_plus(:,k-1);% + G*u(:,k-1);
@@ -92,10 +91,47 @@ for k = 2:length(t)
 end
 
 figure;
-plot(t,state(1,:),'LineWidth',1.2);
+plot(t,state_offnom(1,:)-state(1,:),'LineWidth',1.2);
 hold on;
 plot(t,mu_plus(1,:),'LineWidth',1.2);
 grid on;
 xlabel('Time [s]','FontSize',12);
-ylabel('X-Position [m]','FontSize',12);
-lgd = legend('x_1','KF');
+ylabel('\delta X-Position [m]','FontSize',12);
+lgd = legend('\delta x_1','KF');
+xlim([0 2*pi*sqrt(r0^3/mu)]);
+title('Estimation of \delta x_1 v. Time','FontSize',14);
+
+figure;
+plot(t,state_offnom(2,:)-state(2,:),'LineWidth',1.2);
+hold on;
+plot(t,mu_plus(2,:),'LineWidth',1.2);
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel('\delta X-Velocity [km/s]','FontSize',12);
+lgd = legend('\delta x_2','KF');
+xlim([0 2*pi*sqrt(r0^3/mu)]);
+title('Estimation of \delta x_2 v. Time','FontSize',14);
+
+figure;
+plot(t,state_offnom(3,:)-state(3,:),'LineWidth',1.2);
+hold on;
+plot(t,mu_plus(3,:),'LineWidth',1.2);
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel('\delta Y-Position [m]','FontSize',12);
+lgd = legend('\delta x_3','KF');
+xlim([0 2*pi*sqrt(r0^3/mu)]);
+title('Estimation of \delta x_3 v. Time','FontSize',14);
+
+figure;
+plot(t,state_offnom(4,:)-state(4,:),'LineWidth',1.2);
+hold on;
+plot(t,mu_plus(4,:),'LineWidth',1.2);
+grid on;
+xlabel('Time [s]','FontSize',12);
+ylabel('\delta Y-Velocity [km/s]','FontSize',12);
+lgd = legend('\delta x_4','KF');
+xlim([0 2*pi*sqrt(r0^3/mu)]);
+title('Estimation of \delta x_4 v. Time','FontSize',14);
+
+

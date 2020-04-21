@@ -18,7 +18,7 @@
 %               Progress report 1 of ASEN 5044 Final Project
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [state,state_offnom,y,t]=ODE45_Progress1(plotOn, perturbation)
+function [state,state_offnom,y,y_offnom,t]=ODE45_Progress1(plotOn, perturbation)
 %Constants
 global mu r0
 mu = 398600; %[km^3/s^2]
@@ -134,7 +134,7 @@ if plotOn
     % Do the same thing for each station
     y = [];
     for i = 1:12
-        y_i = Make_Y_i(i,t,state_offnom);
+        y_i = Make_Y_i(i,t,state);
         %Plot it
 %         figure(i+2);
         %Range
@@ -183,7 +183,7 @@ if plotOn
     save('y_nonlin_nom.mat','y');
     %Make Off nom
     y_offnom = [];
-    for i = 7
+    for i = 1:12
         y_i_offnom = Make_Y_i(i,t_offnom,state_offnom);
         y_offnom = [y_offnom; y_i_offnom];
     end
