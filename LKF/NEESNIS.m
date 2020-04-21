@@ -19,14 +19,15 @@ clc;
 close all;
 addpath(genpath('../../ASEN_5044-FinalProject'));
 %Inputs to Monte Carlo Simulation
-NumSims = 50;
+NumSims = 10;
 
 %Preallocation
 NEESsamps = zeros(NumSims,1401);
 NISsamps = zeros(NumSims,1401);
-f = waitbar(0,'i = 0');
+f = waitbar(0);
+
 for i = 1:NumSims
-    pert = [0; 0; abs(mvnrnd(0,.2)); 0];
+    pert = [0; 0; mvnrnd(0,.2); 0];
     [NEES,NIS,~] = LKF_Main(0,pert);
     NEESsamps(i,:) = NEES;
     NISsamps(i,:) = NIS;
@@ -35,14 +36,14 @@ end
 close(f);
 
 %NEES Test
-E_NEESbar = mean(NEESsamps,2);
+E_NEESbar = mean(NEESsamps,1);
 alphaNEES = 0.1;
 Nnx = NumSims*4;
 %Intervals
 r1x = chi2inv(alphaNEES/2, Nnx )./ NumSims;
 r2x = chi2inv(1-alphaNEES/2, Nnx )./ NumSims;
 figure;
-plot(E_NEESbar,'ro','MarkerSize',6,'LineWidth',2);
+plot(E_NEESbar,'ro','MarkerSize',2,'LineWidth',2);
 hold on;
 plot(r1x*ones(size(E_NEESbar)),'r--','LineWidth',2)
 plot(r2x*ones(size(E_NEESbar)),'r--','LineWidth',2)
@@ -53,12 +54,12 @@ title('NEES Estimation Results','FontSize',14);
 lgd = legend('NEES', 'r_1 Bound', 'r_2 Bound');
 
 %NIS Test
-E_NIS = mean(NEESsamps,2);
+E_NIS = mean(NISsamps,1);
 alphaNIS = 0.1;
 r1y = chi2inv(alphaNIS/2,3*NumSims)./ NumSims;
 r2y = chi2inv(1-alphaNIS/2,3*NumSims)./ NumSims;
 figure;
-plot(E_NIS,'bo','MarkerSize',6,'LineWidth',2);
+plot(E_NIS,'bo','MarkerSize',2,'LineWidth',2);
 hold on;
 grid on;
 plot(r1y*ones(size(E_NIS)),'b--','LineWidth',2);
