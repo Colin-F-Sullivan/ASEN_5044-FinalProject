@@ -111,7 +111,7 @@ else
 end
 
 %% NEES
-if exist('xtruth_kplus1','var')
+if xtruth_kplus1~=[]
     stateVectErr=xtruth_kplus1-xplus_kplus1;
     NEES_kplus1=stateVectErr'*(Pplus_kplus1)^-1*stateVectErr;
 else
