@@ -25,16 +25,18 @@ dT = 10;
 %Input known covariances
 input = load('orbitdeterm_finalproj_KFdata.mat');
 Q = input.Qtrue;
-%Q = 5E-14*eye(2)+1E-10*(ones(2)-eye(2));
+%Q_KF = 1E-12*eye(2)+1E-25*(ones(2)-eye(2));
+Q_KF = .003*Q;
 Rtrue = input.Rtrue;
+R_KF = 2*Rtrue;
 
 [state,state_offnom,ynom,y_offnom,t] = ODE45_Progress1(1,pert);
 
 %% Add Noise
-% for i = 1:length(state)
-%     state(:,i) = state(:,i) + mvnrnd([0;0;0;0],[0 0; 1 0; 0 0 ;0 1]*Q*[0 0; 1 0; 0 0 ;0 1]')';
-%     state_offnom(:,i) = state_offnom(:,i) + mvnrnd([0;0;0;0],[0 0; 1 0; 0 0 ;0 1]*Q*[0 0; 1 0; 0 0 ;0 1]')';
-% end
+for i = 1:length(state)
+    state(:,i) = state(:,i) + mvnrnd([0;0;0;0],[0 0; 1 0; 0 0 ;0 10]*Q*[0 0; 1 0; 0 0 ;0 1]')';
+    state_offnom(:,i) = state_offnom(:,i) + mvnrnd([0;0;0;0],[0 0; 1 0; 0 0 ;0 1]*Q*[0 0; 1 0; 0 0 ;0 1]')';
+end
 
 for i = 1:length(ynom)
     %Find which stations are active
@@ -60,7 +62,7 @@ y = (y_offnom-ynom);
 x = (state_offnom-state);
 
 %% KF
-P_0 = .1*eye(4)+.001*(ones(4)-eye(4));
+P_0 = 1E-20*eye(4);%+.001*(ones(4)-eye(4));
 mu_0 = (state_offnom(:,1)-state(:,1));
 
 %Preallocation
@@ -79,7 +81,7 @@ for k = 2:length(t)
     
     %Make H_k
     [~,~,~,H_k,~,ObservingStations]...
-    = ODEulerDTJacobians2(state(:,k),dT,t(k));
+    = ODEulerDTJacobians(state(:,k),dT,t(k));
     
     %Make y_k, R_k, H_k
     y_k = [];
@@ -88,16 +90,16 @@ for k = 2:length(t)
     for s = 1:length(ObservingStations)
         y_k_temp = y(ObservingStations(s)*3-2:ObservingStations(s)*3,k);
         y_k = [y_k; y_k_temp];
-        R_k = blkdiag(R_k,Rtrue);
+        R_k = blkdiag(R_k,R_KF);
     end
     
     %Make F_k_minus_1, G_k_minus_1
-    [F_k_minus_1,G_k_minus_1,Om_k_minus_1,~,~,~]...
-    = ODEulerDTJacobians2(state(:,k),dT,t(k-1));
+    [F_k_minus_1,~,Om_k_minus_1,~,~,~]...
+    = ODEulerDTJacobians(state(:,k-1),dT,t(k-1));
     
     %Iterate KF Loop
     P_k_minus = F_k_minus_1*P_plus(:,:,k-1)*F_k_minus_1' + ...
-        Om_k_minus_1*Q*Om_k_minus_1';
+        Om_k_minus_1*Q_KF*Om_k_minus_1';
     
     %If No station is in view, dont update things
     [~,~,~,~,~,NoStat] = ODEulerDTJacobians(state_offnom(:,k),dT,t(k));
@@ -129,10 +131,10 @@ for k = 2:length(t)
         e_y = y_k - (H_k*mu_plus(:,k));
 
         %NEES
-        NEES(k) = e_x'*inv(P_plus(:,:,k))*e_x;
+        NEES(k) = e_x'*(P_plus(:,:,k))^(-1)*e_x;
         %NIS
         S_k = H_k*P_k_minus*H_k' + R_k;
-        NIS(k) = e_y'*inv(S_k)*e_y;
+        NIS(k) = e_y'*(S_k)^(-1)*e_y;
     end
 end
 
@@ -148,6 +150,7 @@ if plots == 1
     xlabel('Time [s]','FontSize',12);
     ylabel('\delta X-Position [km]','FontSize',12);
     lgd = legend('\delta x_1','KF','\pm 2\sigma');
+    lgd.FontSize = 12;
     xlim([0 2*pi*sqrt(r0^3/mu)]);
     title('Estimation of \delta x_1 v. Time','FontSize',14);
 
@@ -161,6 +164,7 @@ if plots == 1
     xlabel('Time [s]','FontSize',12);
     ylabel('\delta X-Velocity [km/s]','FontSize',12);
     lgd = legend('\delta x_2','KF','\pm 2\sigma');
+    lgd.FontSize = 12;
     xlim([0 2*pi*sqrt(r0^3/mu)]);
     title('Estimation of \delta x_2 v. Time','FontSize',14);
     ylim([-0.010 0.010]);
@@ -175,6 +179,7 @@ if plots == 1
     xlabel('Time [s]','FontSize',12);
     ylabel('\delta Y-Position [km]','FontSize',12);
     lgd = legend('\delta x_3','KF','\pm 2\sigma');
+    lgd.FontSize = 12;
     xlim([0 2*pi*sqrt(r0^3/mu)]);
     title('Estimation of \delta x_3 v. Time','FontSize',14);
 
@@ -188,8 +193,9 @@ if plots == 1
     xlabel('Time [s]','FontSize',12);
     ylabel('\delta Y-Velocity [km/s]','FontSize',12);
     lgd = legend('\delta x_4','KF','\pm 2\sigma');
+    lgd.FontSize = 12;
     xlim([0 2*pi*sqrt(r0^3/mu)]);
     title('Estimation of \delta x_4 v. Time','FontSize',14);
     ylim([-0.010 0.010]);
-    end
-%end
+end
+end
