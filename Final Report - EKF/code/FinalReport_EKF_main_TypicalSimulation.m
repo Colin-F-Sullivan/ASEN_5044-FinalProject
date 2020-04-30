@@ -153,8 +153,8 @@ xlim([0 5431]);
 title(strcat("Error in EKF Estimate of ",graphName{j},'(w.r.t. ode45 Solution) v. Time'),'FontSize',14);
 end
 
-%%
-
+%% Use in MC Code
+if false
 %NEES Test
 E_NEESbar=NEES;
 NumSims=1
@@ -189,3 +189,4 @@ ylabel('NIS statistic','FontSize',14);
 xlabel('Time step, k','FontSize',14);
 title('NIS Estimation Results','FontSize',14);
 legend('NIS', 'r_1 bound', 'r_2 bound');
+end

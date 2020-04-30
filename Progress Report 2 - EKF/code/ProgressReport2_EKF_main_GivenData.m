@@ -20,7 +20,7 @@ clc
 %% Load Data
 load('orbitdeterm_finalproj_KFdata.mat')
 
-Q=Qtrue;
+Q=Qtrue*100;
 R=Rtrue;
 t=tvec;
 
@@ -104,7 +104,7 @@ end
 figure()
 for j=1:4
 subplot(4,1,mod(j+1,2)+1)
-plot(OffNominalStateVector(j,:)-xEKF(j,:))
+plot(xEKF(j,:))
 hold on
 end
 subplot(4,1,3)
