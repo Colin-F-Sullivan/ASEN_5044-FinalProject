@@ -19,7 +19,7 @@ clc;
 close all;
 addpath(genpath('../../ASEN_5044-FinalProject'));
 %Inputs to Monte Carlo Simulation
-NumSims = 100;
+NumSims = 10;
 
 %Preallocation
 NEESsamps = zeros(NumSims,1401);
